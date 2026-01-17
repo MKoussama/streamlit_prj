@@ -47,7 +47,7 @@ st.set_page_config(
 )
 
 # Titre principal
-st.title("📈 Plateforme d'Analyse Financière")
+st.title("[CHART] Plateforme d'Analyse Financière")
 st.markdown("*Application de Mathématiques Appliquées à la Finance*")
 st.markdown("---")
 
@@ -55,7 +55,7 @@ st.markdown("---")
 # SECTION 1 : EN-TÊTE ET CONFIGURATION
 # ============================================================================
 
-st.sidebar.header("⚙️ Configuration")
+st.sidebar.header("[CONFIG] Configuration")
 
 # Sélection de la source de données
 data_source = st.sidebar.radio(
@@ -108,7 +108,7 @@ else:
     )
 
 # Bouton de chargement
-load_button = st.sidebar.button("🔄 Charger les données", type="primary")
+load_button = st.sidebar.button("[LOAD] Charger les données", type="primary")
 
 # ============================================================================
 # CHARGEMENT DES DONNÉES
@@ -143,7 +143,7 @@ if load_button or 'data' in st.session_state:
                 
                 # Stocker dans la session
                 st.session_state['data'] = data
-                st.success(f"✅ Données chargées avec succès! {len(data)} périodes")
+                st.success(f"[OK] Données chargées avec succès! {len(data)} périodes")
                 
             except Exception as e:
                 st.error(f"Erreur lors du chargement: {str(e)}")
@@ -154,7 +154,7 @@ if load_button or 'data' in st.session_state:
     ticker = st.session_state.get('ticker', 'Actif')
     
     # Informations sur les données
-    with st.expander("ℹ️ Informations sur les données"):
+    with st.expander("[INFO] Informations sur les données"):
         info = get_data_info(data)
         col1, col2, col3, col4 = st.columns(4)
         col1.metric("Périodes", info['nombre_periodes'])
@@ -166,7 +166,7 @@ if load_button or 'data' in st.session_state:
     # SECTION 2 : GRAPHIQUE PRINCIPAL
     # ============================================================================
     
-    st.header("📊 Graphique Principal")
+    st.header("[CHART] Graphique Principal")
     
     # Options de visualisation
     col1, col2 = st.columns([3, 1])
@@ -254,7 +254,7 @@ if load_button or 'data' in st.session_state:
     # SECTION 3 : STATISTIQUES ET ANALYSES
     # ============================================================================
     
-    st.header("📈 Analyses Statistiques")
+    st.header("[STATS] Analyses Statistiques")
     
     # Calculer les rendements
     returns_type = st.radio(
@@ -271,10 +271,10 @@ if load_button or 'data' in st.session_state:
     
     # Onglets pour différentes analyses
     tab1, tab2, tab3, tab4 = st.tabs([
-        "📊 Statistiques Descriptives",
-        "📉 Distribution",
-        "🧪 Tests de Normalité",
-        "⚠️ Risque (VaR)"
+        "[DATA] Statistiques Descriptives",
+        "[DIST] Distribution",
+        "[TEST] Tests de Normalité",
+        "[RISK] Risque (VaR)"
     ])
     
     with tab1:
@@ -329,15 +329,15 @@ if load_button or 'data' in st.session_state:
         tests = normality_test(returns)
         
         for test_name, test_results in tests.items():
-            with st.expander(f"📋 {test_name}"):
+            with st.expander(f"[TEST] {test_name}"):
                 col1, col2 = st.columns(2)
                 col1.metric("Statistique", f"{test_results['Statistique']:.4f}")
                 col2.metric("p-value", f"{test_results['p-value']:.4f}")
                 
                 if test_results['Conclusion'] == "Normale":
-                    st.success(f"✅ {test_results['Interprétation']}")
+                    st.success(f"[OK] {test_results['Interprétation']}")
                 else:
-                    st.warning(f"⚠️ {test_results['Interprétation']}")
+                    st.warning(f"[!] {test_results['Interprétation']}")
                 
                 st.info(
                     "**Interprétation**: Si p-value > 0.05, on ne peut pas rejeter "
@@ -373,7 +373,7 @@ if load_button or 'data' in st.session_state:
     # ============================================================================
     
     if show_rsi or show_macd:
-        st.header("📉 Indicateurs Techniques")
+        st.header("[TECH] Indicateurs Techniques")
         
         if show_rsi:
             rsi_period = st.slider("Période RSI", min_value=5, max_value=30, value=14)
@@ -384,11 +384,11 @@ if load_button or 'data' in st.session_state:
             # Valeur actuelle du RSI
             current_rsi = rsi_values.iloc[-1]
             if current_rsi > 70:
-                st.warning(f"⚠️ RSI actuel: {current_rsi:.2f} - Sur-acheté")
+                st.warning(f"[!] RSI actuel: {current_rsi:.2f} - Sur-acheté")
             elif current_rsi < 30:
-                st.success(f"✅ RSI actuel: {current_rsi:.2f} - Sur-vendu")
+                st.success(f"[OK] RSI actuel: {current_rsi:.2f} - Sur-vendu")
             else:
-                st.info(f"ℹ️ RSI actuel: {current_rsi:.2f} - Neutre")
+                st.info(f"[i] RSI actuel: {current_rsi:.2f} - Neutre")
         
         if show_macd:
             macd, signal, histogram = MACD(data['Close'])
@@ -399,7 +399,7 @@ if load_button or 'data' in st.session_state:
     # SECTION 5 : BACKTESTING
     # ============================================================================
     
-    st.header("🔬 Backtesting de Stratégie")
+    st.header("[BACKTEST] Backtesting de Stratégie")
     
     st.markdown("""
     **Stratégie implémentée**: Croisement de moyennes mobiles simples (SMA)
@@ -441,7 +441,7 @@ if load_button or 'data' in st.session_state:
             step=0.1
         ) / 100
     
-    if st.button("🚀 Lancer le Backtest", type="primary"):
+    if st.button("[RUN] Lancer le Backtest", type="primary"):
         with st.spinner("Exécution du backtest..."):
             # Exécuter le backtest
             backtest_results = backtest_sma_crossover(
@@ -467,7 +467,7 @@ if load_button or 'data' in st.session_state:
         st.plotly_chart(fig_backtest, use_container_width=True)
         
         # Métriques de performance
-        st.subheader("📊 Métriques de Performance")
+        st.subheader("[METRICS] Métriques de Performance")
         
         metrics = results['metrics']
         
@@ -516,7 +516,7 @@ if load_button or 'data' in st.session_state:
         st.plotly_chart(fig_dd, use_container_width=True)
         
         # Comparaison avec Buy & Hold
-        st.subheader("📈 Comparaison avec Buy & Hold")
+        st.subheader("[COMPARE] Comparaison avec Buy & Hold")
         
         comparison = compare_with_buy_and_hold(
             results['data']['Capital'],
@@ -544,14 +544,14 @@ if load_button or 'data' in st.session_state:
         
         # Liste des trades
         if len(results['trades']) > 0:
-            with st.expander("📋 Liste des Trades"):
+            with st.expander("[LIST] Liste des Trades"):
                 st.dataframe(results['trades'], use_container_width=True)
     
     # ============================================================================
     # SECTION 6 : DONNÉES BRUTES
     # ============================================================================
     
-    with st.expander("📄 Données OHLC"):
+    with st.expander("[DATA] Données OHLC"):
         st.dataframe(data.tail(50), use_container_width=True)
     
     # ============================================================================
@@ -569,19 +569,19 @@ if load_button or 'data' in st.session_state:
 
 else:
     # Message d'accueil
-    st.info("👈 Configurez les paramètres dans la barre latérale et cliquez sur 'Charger les données' pour commencer")
+    st.info("[<] Configurez les paramètres dans la barre latérale et cliquez sur 'Charger les données' pour commencer")
     
     st.markdown("""
-    ## 🎯 Fonctionnalités
+    ## [TARGET] Fonctionnalités
     
     Cette plateforme offre des outils d'analyse financière professionnels :
     
-    ### 📊 Acquisition de Données
+    ### [DATA] Acquisition de Données
     - Yahoo Finance (actions, indices, crypto, forex)
     - Import de fichiers CSV
     - Validation automatique des données
     
-    ### 📈 Analyses Mathématiques
+    ### [MATH] Analyses Mathématiques
     - Rendements arithmétiques et logarithmiques
     - Statistiques descriptives complètes
     - Moments d'ordre supérieur (Skewness, Kurtosis)
@@ -589,21 +589,21 @@ else:
     - Tests de normalité (Shapiro-Wilk, Jarque-Bera)
     - Value at Risk (VaR)
     
-    ### 📉 Indicateurs Techniques
+    ### [TECH] Indicateurs Techniques
     - Moyennes Mobiles (SMA, EMA)
     - RSI (Relative Strength Index)
     - Bandes de Bollinger
     - MACD (Moving Average Convergence Divergence)
     - ATR (Average True Range)
     
-    ### 🔬 Backtesting
+    ### [BACKTEST] Backtesting
     - Stratégie de croisement de moyennes mobiles
     - Métriques de performance complètes
     - Ratio de Sharpe, Maximum Drawdown, Profit Factor
     - Comparaison avec Buy & Hold
     - Liste détaillée des trades
     
-    ### 📊 Visualisations
+    ### [CHART] Visualisations
     - Graphiques interactifs (Plotly)
     - Chandeliers japonais
     - Histogrammes et QQ-plots
