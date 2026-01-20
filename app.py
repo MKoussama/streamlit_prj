@@ -100,6 +100,25 @@ if data_source == "Yahoo Finance":
         list(config.TIME_INTERVALS.keys())
     )
     interval_code = config.TIME_INTERVALS[interval]
+    
+    # Validation de la plage de dates pour l'intervalle sélectionné
+    if interval_code in config.INTERVAL_LIMITATIONS:
+        max_days = config.INTERVAL_LIMITATIONS[interval_code]["max_days"]
+        date_range_days = (end_date - start_date).days
+        
+        if date_range_days > max_days:
+            st.sidebar.warning(
+                f"⚠️ **Attention**: L'intervalle '{interval}' ne supporte que {max_days} jours maximum.\n\n"
+                f"Votre plage actuelle: **{date_range_days} jours**\n\n"
+                f"**Recommandations:**\n"
+                f"- Réduisez la plage de dates à {max_days} jours ou moins\n"
+                f"- OU changez l'intervalle vers '1 jour', '1 semaine' ou '1 mois'"
+            )
+        elif interval_code == "1m" and date_range_days > 7:
+            st.sidebar.info(
+                f"💡 **Info**: Les données à 1 minute ne sont disponibles que pour les 7 derniers jours.\n\n"
+                f"Pour des données plus anciennes, utilisez un intervalle plus large."
+            )
 
 else:
     uploaded_file = st.sidebar.file_uploader(

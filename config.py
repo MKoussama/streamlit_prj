@@ -42,6 +42,17 @@ TIME_INTERVALS = {
     "1 mois": "1mo"
 }
 
+# Limitations des intervalles (Yahoo Finance)
+INTERVAL_LIMITATIONS = {
+    "1m": {"max_days": 7, "description": "1 minute (max 7 jours)"},
+    "5m": {"max_days": 60, "description": "5 minutes (max 60 jours)"},
+    "15m": {"max_days": 60, "description": "15 minutes (max 60 jours)"},
+    "1h": {"max_days": 730, "description": "1 heure (max 2 ans)"},
+    "1d": {"max_days": 36500, "description": "1 jour (données historiques complètes)"},
+    "1wk": {"max_days": 36500, "description": "1 semaine (données historiques complètes)"},
+    "1mo": {"max_days": 36500, "description": "1 mois (données historiques complètes)"}
+}
+
 # Configuration des couleurs (thème professionnel)
 COLORS = {
     "primary": "#1f77b4",
