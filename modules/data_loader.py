@@ -48,10 +48,7 @@ def load_from_yahoo(ticker: str, start: str, end: str, interval: str = "1d") -> 
                 end=end, 
                 interval=interval, 
                 progress=False,
-                auto_adjust=True,
-                prepost=False,
-                threads=True,
-                proxy=None
+                auto_adjust=True
             )
         except Exception as e1:
             error_messages.append(f"Méthode download: {str(e1)}")
@@ -63,23 +60,28 @@ def load_from_yahoo(ticker: str, start: str, end: str, interval: str = "1d") -> 
                     start=start,
                     end=end,
                     interval=interval,
-                    auto_adjust=True,
-                    prepost=False,
-                    actions=False
+                    auto_adjust=True
                 )
             except Exception as e2:
                 error_messages.append(f"Méthode history: {str(e2)}")
         
         # Vérifier si des données ont été récupérées
         if data is None or data.empty:
-            error_msg = f"Aucune donnée trouvée pour {ticker} entre {start} et {end}.\n"
-            error_msg += "Causes possibles:\n"
-            error_msg += "1. Le ticker est incorrect ou n'existe pas sur Yahoo Finance\n"
-            error_msg += "2. La plage de dates est invalide ou dans le futur\n"
-            error_msg += "3. Yahoo Finance a des problèmes de connexion\n"
-            error_msg += "4. L'intervalle demandé n'est pas disponible pour cette période\n"
+            error_msg = f"Aucune donnée trouvée pour {ticker} entre {start} et {end}.\n\n"
+            error_msg += "⚠️ CAUSES POSSIBLES:\n\n"
+            error_msg += "1. 📅 PLAGE DE DATES INVALIDE:\n"
+            error_msg += f"   - Vérifiez que {start} et {end} sont des dates passées\n"
+            error_msg += f"   - Date actuelle: 2026-01-20\n"
+            error_msg += f"   - Assurez-vous que la date de début est avant la date de fin\n\n"
+            error_msg += "2. 🎯 TICKER INCORRECT:\n"
+            error_msg += f"   - Vérifiez que '{ticker}' existe sur Yahoo Finance\n"
+            error_msg += "   - Essayez: AAPL, MSFT, GOOGL, BTC-USD\n\n"
+            error_msg += "3. 🌐 PROBLÈMES DE CONNEXION:\n"
+            error_msg += "   - Yahoo Finance peut être temporairement indisponible\n\n"
+            error_msg += "4. ⏱️ INTERVALLE NON DISPONIBLE:\n"
+            error_msg += f"   - L'intervalle '{interval}' peut ne pas être disponible pour cette période\n"
             if error_messages:
-                error_msg += f"\nDétails des erreurs:\n" + "\n".join(error_messages)
+                error_msg += f"\n📋 DÉTAILS TECHNIQUES:\n" + "\n".join(f"   - {msg}" for msg in error_messages)
             raise ValueError(error_msg)
         
         # Nettoyer les données (supprimer les lignes avec NaN)
