@@ -91,11 +91,19 @@ def load_from_yahoo(ticker: str, start: str, end: str, interval: str = "1d") -> 
         if len(data) == 0:
             raise ValueError(f"Toutes les données pour {ticker} contiennent des valeurs manquantes")
         
+        # Gérer les colonnes multi-niveaux (Yahoo Finance peut retourner des tuples)
+        if isinstance(data.columns, pd.MultiIndex):
+            # Aplatir les colonnes multi-niveaux
+            data.columns = data.columns.get_level_values(0)
+        
         # S'assurer que les colonnes sont correctes
         # Yahoo Finance peut retourner des colonnes avec ou sans majuscules
         column_mapping = {}
         for col in data.columns:
-            col_lower = col.lower()
+            # Convertir en string si c'est un tuple ou autre type
+            col_str = str(col) if not isinstance(col, str) else col
+            col_lower = col_str.lower()
+            
             if 'open' in col_lower:
                 column_mapping[col] = 'Open'
             elif 'high' in col_lower:
@@ -116,7 +124,9 @@ def load_from_yahoo(ticker: str, start: str, end: str, interval: str = "1d") -> 
         missing_columns = [col for col in required_columns if col not in data.columns]
         
         if missing_columns:
-            raise ValueError(f"Colonnes manquantes: {', '.join(missing_columns)}. Colonnes disponibles: {', '.join(data.columns)}")
+            # Afficher les colonnes disponibles pour le débogage
+            available_cols = ', '.join([str(c) for c in data.columns])
+            raise ValueError(f"Colonnes manquantes: {', '.join(missing_columns)}. Colonnes disponibles: {available_cols}")
         
         # Garder uniquement les colonnes OHLCV
         data = data[required_columns]
