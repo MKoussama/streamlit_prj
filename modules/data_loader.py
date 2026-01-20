@@ -30,24 +30,107 @@ def load_from_yahoo(ticker: str, start: str, end: str, interval: str = "1d") -> 
         DataFrame avec colonnes: Open, High, Low, Close, Volume
     """
     try:
-        data = yf.download(ticker, start=start, end=end, interval=interval, progress=False)
+        # Nettoyer le ticker (enlever les espaces)
+        ticker = ticker.strip().upper()
         
-        if data.empty:
-            raise ValueError(f"Aucune donnée trouvée pour {ticker}")
+        # Créer un objet Ticker pour plus de contrôle
+        ticker_obj = yf.Ticker(ticker)
         
-        # Nettoyer les données
+        # Essayer de télécharger les données avec plusieurs méthodes
+        data = None
+        error_messages = []
+        
+        # Méthode 1: Utiliser yf.download (méthode standard)
+        try:
+            data = yf.download(
+                ticker, 
+                start=start, 
+                end=end, 
+                interval=interval, 
+                progress=False,
+                auto_adjust=True,
+                prepost=False,
+                threads=True,
+                proxy=None
+            )
+        except Exception as e1:
+            error_messages.append(f"Méthode download: {str(e1)}")
+        
+        # Méthode 2: Utiliser ticker.history si la première méthode échoue
+        if data is None or data.empty:
+            try:
+                data = ticker_obj.history(
+                    start=start,
+                    end=end,
+                    interval=interval,
+                    auto_adjust=True,
+                    prepost=False,
+                    actions=False
+                )
+            except Exception as e2:
+                error_messages.append(f"Méthode history: {str(e2)}")
+        
+        # Vérifier si des données ont été récupérées
+        if data is None or data.empty:
+            error_msg = f"Aucune donnée trouvée pour {ticker} entre {start} et {end}.\n"
+            error_msg += "Causes possibles:\n"
+            error_msg += "1. Le ticker est incorrect ou n'existe pas sur Yahoo Finance\n"
+            error_msg += "2. La plage de dates est invalide ou dans le futur\n"
+            error_msg += "3. Yahoo Finance a des problèmes de connexion\n"
+            error_msg += "4. L'intervalle demandé n'est pas disponible pour cette période\n"
+            if error_messages:
+                error_msg += f"\nDétails des erreurs:\n" + "\n".join(error_messages)
+            raise ValueError(error_msg)
+        
+        # Nettoyer les données (supprimer les lignes avec NaN)
+        initial_len = len(data)
         data = data.dropna()
         
+        if len(data) == 0:
+            raise ValueError(f"Toutes les données pour {ticker} contiennent des valeurs manquantes")
+        
         # S'assurer que les colonnes sont correctes
+        # Yahoo Finance peut retourner des colonnes avec ou sans majuscules
+        column_mapping = {}
+        for col in data.columns:
+            col_lower = col.lower()
+            if 'open' in col_lower:
+                column_mapping[col] = 'Open'
+            elif 'high' in col_lower:
+                column_mapping[col] = 'High'
+            elif 'low' in col_lower:
+                column_mapping[col] = 'Low'
+            elif 'close' in col_lower:
+                column_mapping[col] = 'Close'
+            elif 'volume' in col_lower:
+                column_mapping[col] = 'Volume'
+        
+        # Renommer les colonnes si nécessaire
+        if column_mapping:
+            data = data.rename(columns=column_mapping)
+        
+        # Vérifier que toutes les colonnes requises sont présentes
         required_columns = ['Open', 'High', 'Low', 'Close', 'Volume']
-        for col in required_columns:
-            if col not in data.columns:
-                raise ValueError(f"Colonne manquante: {col}")
+        missing_columns = [col for col in required_columns if col not in data.columns]
+        
+        if missing_columns:
+            raise ValueError(f"Colonnes manquantes: {', '.join(missing_columns)}. Colonnes disponibles: {', '.join(data.columns)}")
+        
+        # Garder uniquement les colonnes OHLCV
+        data = data[required_columns]
+        
+        # Convertir en float pour éviter les problèmes de type
+        data = data.astype(float)
         
         return data
     
+    except ValueError as ve:
+        # Propager les ValueError telles quelles
+        raise Exception(f"Erreur lors du téléchargement depuis Yahoo Finance: {str(ve)}")
+    
     except Exception as e:
-        raise Exception(f"Erreur lors du téléchargement depuis Yahoo Finance: {str(e)}")
+        # Pour toutes les autres erreurs
+        raise Exception(f"Erreur inattendue lors du téléchargement depuis Yahoo Finance: {str(e)}")
 
 
 def load_from_binance(symbol: str, start: str, end: str, interval: str = "1d") -> pd.DataFrame:
